@@ -112,7 +112,9 @@ describe("TokenSwap — buyTokens()", function () {
     const { swap, buyer } = await loadFixture(deployFixture);
 
     const ethSent  = ethers.parseEther("1");          // 1 ETH
-    const expected = ethSent * RATE / ethers.parseEther("1"); // = 1000 RTK
+    // tokenAmount should be returned in the token's smallest unit (18 decimals)
+    // with our new math that's simply ethSent * RATE.
+    const expected = ethSent * RATE;                      // 1000 × 1e18
 
     await swap.connect(buyer).buyTokens({ value: ethSent });
 
@@ -134,7 +136,7 @@ describe("TokenSwap — buyTokens()", function () {
   it("should emit TokensBought event with correct args", async function () {
     const { swap, buyer } = await loadFixture(deployFixture);
     const ethSent     = ethers.parseEther("2");
-    const tokenAmount = ethSent * RATE / ethers.parseEther("1");
+    const tokenAmount = ethSent * RATE; // in token wei
 
     await expect(swap.connect(buyer).buyTokens({ value: ethSent }))
       .to.emit(swap, "TokensBought")
@@ -221,7 +223,7 @@ describe("TokenSwap — previewBuy() / previewSell()", function () {
   it("previewBuy should return correct token amount", async function () {
     const { swap } = await loadFixture(deployFixture);
     const eth = ethers.parseEther("2");
-    expect(await swap.previewBuy(eth)).to.equal(eth * RATE / ethers.parseEther("1"));
+    expect(await swap.previewBuy(eth)).to.equal(eth * RATE);
   });
 
   it("previewSell should return correct ETH amount", async function () {

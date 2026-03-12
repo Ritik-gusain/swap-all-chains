@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "ritikswap_index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/ritikswap_index.html" }
+  ],
+  "cleanUrls": true
+}

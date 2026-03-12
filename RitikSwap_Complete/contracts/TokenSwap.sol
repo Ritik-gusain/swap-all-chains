@@ -155,9 +155,13 @@ contract TokenSwap {
         // ── Check ──
         if (msg.value == 0) revert ZeroAmount();
 
-        uint256 tokenAmount = msg.value * rate / 1 ether;
-        // Note: dividing by 1 ether (= 1e18) normalises from wei to ETH units
-        // so the rate stays human-readable (tokens per whole ETH, not per wei).
+        // `rate` represents whole tokens per 1 ETH, and `msg.value` is in wei.
+        // To get the token amount in *smallest units* we simply multiply –
+        // the wei/ether conversion cancels out, so the result is already
+        // denominated in token wei:
+        //    tokenAmount = msg.value * rate
+        // e.g. 1 ETH (1e18 wei) × 1000 = 1000×1e18 token‑wei.
+        uint256 tokenAmount = msg.value * rate;
 
         uint256 contractTokenBalance = token.balanceOf(address(this));
         if (tokenAmount > contractTokenBalance)
@@ -187,8 +191,11 @@ contract TokenSwap {
         // ── Check ──
         if (tokenAmount == 0) revert ZeroAmount();
 
-        uint256 ethAmount = tokenAmount * 1 ether / rate;
-        // Inverse of buyTokens: tokens / rate = ETH owed (in wei)
+        // `tokenAmount` is already in token wei.  Since `rate` is tokens per
+        // ETH (whole tokens) the ETH owed in wei is simply `tokenAmount / rate`.
+        // The previous implementation multiplied by 1 ether, which inflated the
+        // result by 1e18 and broke the math.
+        uint256 ethAmount = tokenAmount / rate;
 
         uint256 contractEthBalance = address(this).balance;
         if (ethAmount > contractEthBalance)
@@ -291,7 +298,8 @@ contract TokenSwap {
      * @param  ethAmount Amount of ETH in wei.
      */
     function previewBuy(uint256 ethAmount) external view returns (uint256 tokenAmount) {
-        tokenAmount = ethAmount * rate / 1 ether;
+        // mirror buyTokens logic: result should be in token wei
+        tokenAmount = ethAmount * rate;
     }
 
     /**
@@ -299,7 +307,8 @@ contract TokenSwap {
      * @param  tokenAmount Number of tokens (in smallest unit).
      */
     function previewSell(uint256 tokenAmount) external view returns (uint256 ethAmount) {
-        ethAmount = tokenAmount * 1 ether / rate;
+        // mirror sellTokens logic
+        ethAmount = tokenAmount / rate;
     }
 
     // ─── Fallback ───────────────────────────────────────────────────────

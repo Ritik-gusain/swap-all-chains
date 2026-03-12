@@ -1,0 +1,10 @@
+# Ignore everything except the frontend
+RitikSwap_Complete/
+!ritikswap_index.html
+!README.md
+
+# node modules and hardhat artifacts
+node_modules/
+RitikSwap_Complete/node_modules/
+RitikSwap_Complete/artifacts/
+RitikSwap_Complete/cache/
